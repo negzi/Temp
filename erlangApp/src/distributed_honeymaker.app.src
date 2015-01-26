@@ -1,0 +1,12 @@
+{application, distributed_honeymaker,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { distributed_honeymaker_app, []}},
+  {env, []}
+ ]}.
