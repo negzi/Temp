@@ -6,7 +6,7 @@
 		node_name,
 		comm_pid}).
 
--define(TOPDIR, "/home/neg/erlApp").
+-define(TOPDIR, "/home/enegfaz/distributedApp/Temp/erlangApp").
 
 
 start_hive(File) ->
@@ -41,6 +41,7 @@ loop(S = #state{}) ->
 	{From, {here_is_my_info, OtherNodeState}} ->
 	    exit(S#state.comm_pid, kill),
 	    io:format("here is my info msg: ~p~n",[OtherNodeState]),
+	    big_hive:create_slave_hive(big_hive:gen_ran_name()),
 	   shut_down_remote_node(OtherNodeState#state.node_name),
 	    loop(S);
 	{shutdown}->
@@ -61,8 +62,6 @@ identify_your_self(Message) ->
     {From, Msg} = Message,
     {?MODULE, node()} ! {From, {identify_your_self, Msg}}.
 
-get_hives_node() ->
-    node().
 
 return_hive_ref() ->
     erlang:monitor(process, whereis(?MODULE)).

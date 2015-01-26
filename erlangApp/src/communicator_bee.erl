@@ -11,8 +11,8 @@ get_list_of_other_nodes(TopDir) ->
     Nodes = file_search:return_node_name(TopDir),
     NodeList = [list_to_atom(N) || N <- Nodes],
     Res = lists:filter(fun(Node) -> 
-			 (Node =/= node())  and (Node =/= nonode@nohost)
-		 end,
+			       (Node =/= node())  and (Node =/= nonode@nohost)
+		       end,
 		       NodeList),
     case Res of
 	[] ->

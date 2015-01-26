@@ -8,7 +8,8 @@ generate_md5(File, Node) ->
 	{ok, IoDevice} ->
 	    case read_bytes(IoDevice, erlang:md5_init()) of
 		{ok, Result} ->
-		    file:write_file(node_name_to_str(Node)++".md5", Result)
+		    file:write_file(node_name_to_str(Node)++".md5",
+				    Result)
 	    end;
 	Error -> {error, file_open_failed}
     end.
