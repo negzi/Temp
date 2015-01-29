@@ -17,6 +17,7 @@ destroy_none_parent_hive() ->
     1 + 1.
 
 gen_ran_name() ->
-    Name = lists:map(fun(_) ->random:uniform(26) + 64 end,
-		     lists:seq(1,7)),
-    list_to_atom(Name).
+    BList = binary:bin_to_list(crypto:strong_rand_bytes(4)),
+    CharList = lists:map(fun(X) -> (X rem -25)  + 97 end, BList),
+    list_to_atom(CharList).
+

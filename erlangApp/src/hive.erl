@@ -40,23 +40,28 @@ loop(S = #state{}) ->
 	    loop(S);
 	{From, {here_is_my_info, OtherNodeState}} ->
 	    exit(S#state.comm_pid, kill),
+	    os:cmd("rm ./"++ atom_to_list(S#state.node_name)++".md5"),
 	    io:format("here is my info msg: ~p~n",[OtherNodeState]),
-	    big_hive:create_slave_hive(big_hive:gen_ran_name()),
-	   shut_down_remote_node(OtherNodeState#state.node_name),
+	    Slave = big_hive:create_slave_hive(rand_name()),
+	    shut_down_remote_node(OtherNodeState#state.node_name),
+	    big_hive:start_app_on_slave_hive(Slave),
 	    loop(S);
 	{shutdown}->
 	    exit(?MODULE, kill);
-	Unknown ->            
+	Unknown ->
 	    io:format("Unknown message: ~p~n",[Unknown]),
 	    loop(S)
     end.
+
+rand_name() ->
+    big_hive:gen_ran_name().
 
 honey_maker_bee(File) ->
     honey_maker:generate_md5(File, node()).
 
 communicator_bee_search_other_hives(Dir) ->
-    [OtherNode] = communicator_bee:get_list_of_other_nodes(Dir),
-    identify_your_self({{?MODULE,OtherNode}, {get_queen_id(), node()}}).
+    [OtherNodes]= communicator_bee:get_list_of_other_nodes(Dir),
+    identify_your_self({{?MODULE,OtherNodes}, {get_queen_id(), node()}}).
 
 identify_your_self(Message) ->
     {From, Msg} = Message,
