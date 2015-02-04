@@ -1,58 +1,53 @@
 -module(hive).
--compile(export_all).
+-export([start_hive/1]).
+
+-export([init/1, loop/1, honey_maker_bee/1, 
+	 communicator_bee_search_other_hives/1, identify_your_self/1]).
 
 -record(state, {queen_id,
-                hive_id,
 		node_name,
 		comm_pid}).
 
 -define(TOPDIR, "/home/enegfaz/distributedApp/Temp/erlangApp").
 
-
 start_hive(File) ->
     register(?MODULE, Pid=spawn(?MODULE, init, [File])),
     {ok, Pid}.
-
-start_link() ->
-    register(?MODULE, Pid=spawn_link(?MODULE, init, [])),
-    {ok, Pid}.
-
-terminate() ->
-    ?MODULE ! {shutdown}.
 
 init(File) ->
     spawn(?MODULE, honey_maker_bee, [File]),
     Pid = spawn(?MODULE, communicator_bee_search_other_hives, [?TOPDIR]),
     loop(#state{queen_id= get_queen_id(),
-		hive_id = return_hive_ref(),
 		node_name = node(),
 		comm_pid = Pid}).
 
 loop(S = #state{}) ->
     receive
-	{From, hi} ->
-	    From ! {{?MODULE, node()}, hello},
-	    loop(S);
-        {From, {identify_your_self, OtherNodeInfo}} ->
+        {From, {identify_your_self, _}} ->
 	    kill_communicator_if_alive(S#state.comm_pid),
 	    From ! {{?MODULE, node()},{here_is_my_info, S}},
-	    io:format("i am in identify msg: ~p~n",[OtherNodeInfo]),
 	    loop(S);
-	{From, {here_is_my_info, OtherNodeState}} ->
+	{_, {here_is_my_info, OtherNodeState}} ->
 	    exit(S#state.comm_pid, kill),
-	    os:cmd("rm ./"++ atom_to_list(S#state.node_name)++".md5"),
-	    io:format("here is my info msg: ~p~n",[OtherNodeState]),
-	    Slave = big_hive:create_slave_hive(rand_name()),
+	    remove_md5(S#state.node_name),
+	    Slave = create_slave(),
 	    shut_down_remote_node(OtherNodeState#state.node_name),
-	    big_hive:start_app_on_slave_hive(Slave),
+	    start_app_on(Slave),
 	    loop(S);
-	{shutdown}->
-	    exit(?MODULE, kill);
 	Unknown ->
 	    io:format("Unknown message: ~p~n",[Unknown]),
 	    loop(S)
     end.
 
+remove_md5(Node) ->
+    os:cmd("rm ./"++ atom_to_list(Node)++".md5").
+ 
+start_app_on(Slave) ->
+    big_hive:start_app_on_slave_hive(Slave).
+    
+create_slave() ->
+    big_hive:create_slave_hive(rand_name()).
+    
 rand_name() ->
     big_hive:gen_ran_name().
 
@@ -66,10 +61,6 @@ communicator_bee_search_other_hives(Dir) ->
 identify_your_self(Message) ->
     {From, Msg} = Message,
     {?MODULE, node()} ! {From, {identify_your_self, Msg}}.
-
-
-return_hive_ref() ->
-    erlang:monitor(process, whereis(?MODULE)).
 
 get_queen_id() ->    
     make_ref().

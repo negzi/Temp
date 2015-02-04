@@ -6,16 +6,19 @@
 generate_md5(File, Node) ->
     case file:open(File, [binary,raw,read]) of
 	{ok, IoDevice} ->
-	    case read_bytes(IoDevice, erlang:md5_init()) of
-		{ok, Result} ->
-		    file:write_file(node_name_to_str(Node)++".md5",
-				    Result)
-	    end;
+	    write_file(IoDevice, Node);
 	Error -> {error, file_open_failed}
     end.
 
 node_name_to_str(Node) ->
     erlang:atom_to_list(Node).
+
+write_file(Device, Node) ->
+    case read_bytes(Device, erlang:md5_init()) of
+	{ok, Result} ->	    
+	    file:write_file(node_name_to_str(Node)++".md5",
+			    Result)
+    end.
 
 read_bytes(Device, Context) ->
     case file:read(Device, ?BLOCKSIZE) of

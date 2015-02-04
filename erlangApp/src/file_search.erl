@@ -1,19 +1,6 @@
 -module(file_search).
--export([return_node_name_and_topdir/1]).
+-export([return_node_name_and_topdir/1, return_node_name/1]).
 -compile(export_all). 
-
-
-group_nodes_with_same_topdir([]) -> [];
-group_nodes_with_same_topdir([{Node1, Dir1}, {Node2, Dir2}|T]) ->
-    case Dir1 =:= Dir2 of
-        true ->
-            [{[Node1, Node2], Dir1}|group_nodes_with_same_topdir(T)];
-        false ->
-            group_nodes_with_same_topdir([{Node2, Dir2}|T])
-    end;
-group_nodes_with_same_topdir([_|T]) ->
-    group_nodes_with_same_topdir(T).
-
 
 return_node_name_and_topdir(Dir) ->
     case recursively_list_dir(Dir) of
@@ -69,9 +56,4 @@ recursively_list_dir([Path|Paths], FilesOnly, Acc) ->
         end).
 
 find_md5_files(File) ->
-    case filename:extension(File) == ".md5" of
-        true ->
-            true;
-        false ->
-	    false
-    end.
+    filename:extension(File) == ".md5".
