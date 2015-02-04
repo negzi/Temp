@@ -1,6 +1,6 @@
 -module(file_search).
 -export([return_node_name_and_topdir/1, return_node_name/1]).
--compile(export_all). 
+
 
 return_node_name_and_topdir(Dir) ->
     case recursively_list_dir(Dir) of
