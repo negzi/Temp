@@ -1,7 +1,7 @@
 -module(hive).
 -export([start_hive/1]).
 
--export([init/1, loop/1, honey_maker_bee/1, 
+-export([init/1, loop/1, honey_maker_bee/1,
 	 communicator_bee_search_other_hives/1, identify_your_self/1]).
 
 -record(state, {queen_id,
@@ -34,6 +34,11 @@ loop(S = #state{}) ->
 	    shut_down_remote_node(OtherNodeState#state.node_name),
 	    start_app_on(Slave),
 	    loop(S);
+	upgrade ->         
+	    code:purge(?MODULE),
+            compile:file(?MODULE),
+            code:load_file(?MODULE),
+            ?MODULE:loop(S);
 	Unknown ->
 	    io:format("Unknown message: ~p~n",[Unknown]),
 	    loop(S)
